@@ -148,3 +148,8 @@ administrator: `winget install usbipd`, then `usbipd list`, `usbipd bind --busid
 | Collision | [coal](https://github.com/coal-library/coal) |
 | UI | [viser](https://github.com/nerfstudio-project/viser) |
 | Robot model | [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100), see `robot/README.md` |
+
+## License
+
+[Apache License 2.0](LICENSE). The SO-101 model files in `robot/` come from
+[SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100), also Apache 2.0.

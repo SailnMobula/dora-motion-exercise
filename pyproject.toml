@@ -3,6 +3,7 @@ name = "so101-exercises"
 version = "0.1.0"
 description = "Motion stack exercises for the SO-101 on dora: joints, ruckig, IK, LIN, collision, planner"
 requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
 dependencies = [
     "numpy>=1.26",
     "pin>=3.8",
