@@ -27,12 +27,12 @@ home:
   wrist_roll: 0.0
   gripper: 0.0
 
-# The real arm. SO101_PORT overrides port. The calibration is LeRobot's JSON; only its
-# range_min and range_max are used, to clamp goals. 2048 steps is 0 rad, so the servos
-# must carry LeRobot's homing offsets.
+# The real arm. SO101_PORT overrides port. calibration, relative to this file, is LeRobot's
+# JSON for the training arm; only its range_min and range_max are used, to clamp goals.
+# 2048 steps is 0 rad, so the servos must carry the homing offsets of the same calibration.
 real:
   port: /dev/ttyACM0
-  calibration: ~/.cache/huggingface/lerobot/calibration/robots/so_follower/follower.json
+  calibration: calibration/so101_follower.json
   motors:
     shoulder_pan: {id: 1, p_gain: 32}
     shoulder_lift: {id: 2, p_gain: 32}

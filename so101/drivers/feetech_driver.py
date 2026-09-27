@@ -50,7 +50,7 @@ class RealConfig:
         raw = config.raw["real"]
         return RealConfig(
             os.environ.get("SO101_PORT", raw["port"]),
-            Path(raw["calibration"]).expanduser(),
+            (config.path.parent / Path(raw["calibration"]).expanduser()).resolve(),
             {name: Motor(int(entry["id"]), int(entry["p_gain"])) for name, entry in raw["motors"].items()},
         )
 

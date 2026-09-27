@@ -114,8 +114,10 @@ at once: `solutions/full/`.
 
 ## Real arm
 
-Requirements: a [LeRobot](https://github.com/huggingface/lerobot) calibration, which places
-each joint's zero at the middle of its range, and access to the serial port.
+`config/calibration/so101_follower.json` is the [LeRobot](https://github.com/huggingface/lerobot)
+calibration of the training arm: each joint's zero at the middle of its range. Another SO-101
+needs its own calibration, `lerobot-calibrate --robot.type=so101_follower`, with the resulting
+JSON in place of that file. The serial port needs user access:
 
 ```bash
 uv sync --extra real
@@ -146,6 +148,7 @@ shows them against the URDF.
 | `so101/` | library without dora dependency: kinematics, IK, profiles, collision, drivers |
 | `nodes/` | one dora node per file, thin wrappers around `so101/` |
 | `config/robot.yaml` | joints, tool frame, home pose, table, real arm port |
+| `config/calibration/` | LeRobot calibration of the training arm |
 | `config/motion.yaml` | PTP velocity, acceleration and jerk, LIN tool limits, sim servo |
 | `config/scenes/` | obstacle boxes |
 | `robot/` | SO-101 URDF, STL meshes, SRDF |
