@@ -1,0 +1,16 @@
+# PTP limits in rad/s, rad/s^2 and optionally rad/s^3. The STS3215 tops out near 5.2 rad/s
+# unloaded. Without jerk the velocity is a trapezoid; with jerk it is an S-curve. default
+# applies to every joint; a joint listed by name takes what it does not set from default.
+# The ui's Motion limits fields replace default at run time.
+joints:
+  default: {velocity: 1.5, acceleration: 3.0, jerk: 10.0}
+
+# LIN limits for the tool, m/s and m/s^2.
+lin:
+  velocity: 0.10
+  acceleration: 0.30
+
+# The sim servo: each joint runs to its setpoint at this speed, no coordination between joints.
+servo:
+  velocity: 3.0
+  acceleration: 20.0

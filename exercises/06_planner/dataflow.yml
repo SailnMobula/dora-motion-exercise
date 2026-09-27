@@ -1,0 +1,50 @@
+# Exercise 6: planner. IK, ruckig and collision answer requests, the planner tries postures in turn.
+# Wire it: uncomment an input and give it one node's output, written <node>/<output>.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      # state:
+      # plan:
+      # scene:
+    outputs: [target, execute, backend, motion]
+
+  - id: planner
+    path: ../../nodes/planner.py
+    inputs:
+      # target:
+      # state:
+      # ik_response:
+      # trajectory_response:
+      # collision_response:
+    outputs: [ik_request, trajectory_request, collision_request, plan]
+
+  - id: ik
+    path: ../../nodes/ik.py
+    inputs:
+      # request:
+    outputs: [response]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      # motion:
+      # request:
+    outputs: [response]
+
+  - id: collision
+    path: ../../nodes/collision.py
+    env:
+      SCENE: box
+    inputs:
+      # request:
+      # state:
+    outputs: [response, scene]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      # trajectory:
+      # backend:
+    outputs: [state]

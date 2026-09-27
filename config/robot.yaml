@@ -1,0 +1,42 @@
+# The SO-101. Paths are relative to this file.
+urdf: ../robot/so101_new_calib.urdf
+srdf: ../robot/so101.srdf
+motion: motion.yaml
+scenes: scenes
+arm_joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll]
+gripper_joint: gripper
+tool_frame: gripper_frame_link
+# Five joints: pitch and roll are free, yaw follows from the position.
+orientation: approach
+roll_joint: wrist_roll
+# The SO-101 stands on this block, top at z 0. Drawn in every exercise, collision checked
+# wherever a collision node runs; only base_link may touch it.
+table:
+  size: [0.5, 0.7, 0.75]
+  position: [0.12, 0.0, -0.3765]
+  touches: [base_link]
+view:
+  camera_position: [0.55, -0.45, 0.4]
+  camera_look_at: [0.12, 0.0, 0.08]
+  grid_size: 0.8
+home:
+  shoulder_pan: 0.0
+  shoulder_lift: -1.2
+  elbow_flex: 1.2
+  wrist_flex: 0.6
+  wrist_roll: 0.0
+  gripper: 0.0
+
+# The real arm. SO101_PORT overrides port. The calibration is LeRobot's JSON; only its
+# range_min and range_max are used, to clamp goals. 2048 steps is 0 rad, so the servos
+# must carry LeRobot's homing offsets.
+real:
+  port: /dev/ttyACM0
+  calibration: ~/.cache/huggingface/lerobot/calibration/robots/so_follower/follower.json
+  motors:
+    shoulder_pan: {id: 1, p_gain: 32}
+    shoulder_lift: {id: 2, p_gain: 32}
+    elbow_flex: {id: 3, p_gain: 32}
+    wrist_flex: {id: 4, p_gain: 32}
+    wrist_roll: {id: 5, p_gain: 32}
+    gripper: {id: 6, p_gain: 32}

@@ -1,0 +1,24 @@
+# Exercise 2: time. Ruckig between the sliders and the servos, plan first, then execute.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      state: driver/state
+      plan: trajectory/plan
+    outputs: [goal, execute, backend, motion]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      motion: ui/motion
+      goal: ui/goal
+      state: driver/state
+    outputs: [plan]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      trajectory: ui/execute
+      backend: ui/backend
+    outputs: [state]

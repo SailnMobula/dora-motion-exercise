@@ -1,0 +1,45 @@
+# Exercise 5: collision. Every plan passes the collision node before the ui sees it.
+# Wire it: uncomment an input and give it one node's output, written <node>/<output>.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      # state:
+      # plan:
+      # scene:
+    outputs: [target, line, execute, backend, motion]
+
+  - id: ik
+    path: ../../nodes/ik.py
+    inputs:
+      # target:
+      # path:
+      # state:
+    outputs: [goal, plan]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      # motion:
+      # goal:
+      # line:
+      # state:
+    outputs: [plan, path]
+
+  - id: collision
+    path: ../../nodes/collision.py
+    env:
+      SCENE: box
+    inputs:
+      # plan:
+      # line_plan:
+      # state:
+    outputs: [plan, scene]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      # trajectory:
+      # backend:
+    outputs: [state]

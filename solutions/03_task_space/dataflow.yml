@@ -1,0 +1,31 @@
+# Exercise 3: task space. IK in front of ruckig, the gizmo sets a tool position.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      state: driver/state
+      plan: trajectory/plan
+    outputs: [target, execute, backend, motion]
+
+  - id: ik
+    path: ../../nodes/ik.py
+    inputs:
+      target: ui/target
+      state: driver/state
+    outputs: [goal]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      motion: ui/motion
+      goal: ik/goal
+      state: driver/state
+    outputs: [plan]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      trajectory: ui/execute
+      backend: ui/backend
+    outputs: [state]

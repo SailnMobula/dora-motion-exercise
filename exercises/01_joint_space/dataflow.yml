@@ -1,0 +1,15 @@
+# Exercise 1: joint space, no time. Sliders straight to the servos.
+# Wire it: uncomment an input and give it one node's output, written <node>/<output>.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      # state:
+    outputs: [joints]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      # joints:
+    outputs: [state]

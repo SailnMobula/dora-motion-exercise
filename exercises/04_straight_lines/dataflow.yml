@@ -1,0 +1,35 @@
+# Exercise 4: straight lines. PTP goes IK then ruckig, LIN goes ruckig then IK.
+# Wire it: uncomment an input and give it one node's output, written <node>/<output>.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      # state:
+      # plan:
+      # line_plan:
+    outputs: [target, line, execute, backend, motion]
+
+  - id: ik
+    path: ../../nodes/ik.py
+    inputs:
+      # target:
+      # path:
+      # state:
+    outputs: [goal, plan]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      # motion:
+      # goal:
+      # line:
+      # state:
+    outputs: [plan, path]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      # trajectory:
+      # backend:
+    outputs: [state]

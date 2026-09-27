@@ -1,0 +1,34 @@
+# Exercise 4: straight lines. PTP goes IK then ruckig, LIN goes ruckig then IK.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      state: driver/state
+      plan: trajectory/plan
+      line_plan: ik/plan
+    outputs: [target, line, execute, backend, motion]
+
+  - id: ik
+    path: ../../nodes/ik.py
+    inputs:
+      target: ui/target
+      path: trajectory/path
+      state: driver/state
+    outputs: [goal, plan]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      motion: ui/motion
+      goal: ik/goal
+      line: ui/line
+      state: driver/state
+    outputs: [plan, path]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      trajectory: ui/execute
+      backend: ui/backend
+    outputs: [state]

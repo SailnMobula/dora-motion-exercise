@@ -1,0 +1,7 @@
+# A 5 cm block straight in front of the robot, beside the pick target (0.24, -0.06, 0.03).
+# The first IK posture sweeps the gripper through it. A via point 15 cm above the target
+# clears it, and so does the planner's fourth posture.
+boxes:
+  - name: block
+    size: [0.05, 0.05, 0.06]
+    position: [0.26, 0.0, 0.03]

@@ -1,0 +1,25 @@
+# Exercise 2: time. Ruckig between the sliders and the servos, plan first, then execute.
+# Wire it: uncomment an input and give it one node's output, written <node>/<output>.
+nodes:
+  - id: ui
+    path: ../../nodes/ui.py
+    inputs:
+      # state:
+      # plan:
+    outputs: [goal, execute, backend, motion]
+
+  - id: trajectory
+    path: ../../nodes/trajectory.py
+    inputs:
+      # motion:
+      # goal:
+      # state:
+    outputs: [plan]
+
+  - id: driver
+    path: ../../nodes/driver.py
+    inputs:
+      tick: dora/timer/millis/20
+      # trajectory:
+      # backend:
+    outputs: [state]
