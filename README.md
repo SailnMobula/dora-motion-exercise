@@ -1,32 +1,59 @@
 # dora motion exercises
 
-Build a robot motion stack for the SO-101 arm, one node at a time, in
-[dora](https://github.com/dora-rs/dora) with a [viser](https://github.com/nerfstudio-project/viser)
-browser UI.
+A motion stack for the SO-101 arm, built up in six exercises as a
+[dora](https://github.com/dora-rs/dora) dataflow. Each exercise adds one node. The nodes are
+implemented; the exercise is the wiring between them. All exercises run against a simulated
+arm, the real arm is supported through the same driver interface.
 
-Six exercises, one motion stack for the SO-101 robot arm. Every part is a ready-made node.
-Your job is the wiring: which data goes into which node.
+## Stack
 
-Everything runs in simulation. The real arm is optional.
+| Function | Implementation |
+| --- | --- |
+| Dataflow | dora-rs 1.0.1, one Python process per node, JSON messages in Arrow arrays |
+| Kinematics, IK | [pinocchio](https://github.com/stack-of-tasks/pinocchio), damped least squares |
+| Trajectories | [ruckig](https://github.com/pantor/ruckig), phase-synchronised PTP and LIN |
+| Collision | [coal](https://github.com/coal-library/coal) on convex hulls of the URDF meshes |
+| UI | [viser](https://github.com/nerfstudio-project/viser), in the browser |
+| Robot | SO-101: 5 revolute arm joints, 1 gripper joint, Feetech STS3215 servos |
 
-## What you need
+The SO-101 has five arm joints for a six-dimensional tool pose. `shoulder_pan` is the only
+vertical axis, so the tool yaw follows from the position. IK solves position, pitch and roll:
+five equations for five joints. With the gripper pointing straight down, the tool point
+reaches 93 mm above the base at most.
 
-- A PC with **Linux** (Ubuntu 22.04 or newer, x86_64 or ARM64), or **Windows with WSL2**
-- A browser: Chrome, Firefox or Edge
-- About 1 GB of disk space
+## Exercises
 
-### Windows only: set up WSL2
+| # | Exercise | Node added | Content |
+| --- | --- | --- | --- |
+| 1 | Joint space | `ui`, `driver` | joint goals straight to the servos, each joint at 3 rad/s independently |
+| 2 | Time | `trajectory` | ruckig PTP: synchronised stop, trapezoid or jerk-limited S-curve |
+| 3 | Task space | `ik` | tool position, pitch and roll to joint goals |
+| 4 | Straight lines | LIN in `trajectory` and `ik` | timed Cartesian path, IK per sample at 50 Hz |
+| 5 | Collision | `collision` | every plan checked against the table and a 5 cm block |
+| 6 | Planner | `planner` | IK, ruckig and collision as services, up to 8 IK postures per target |
 
-In PowerShell, as administrator:
+Exercises 1 to 5 form a pipeline: each node consumes its upstream output. Exercise 6 turns the
+same nodes into services on request/response topics, orchestrated by a planner that retries
+postures. Each exercise folder contains a `README.md` with the task.
+
+## Requirements
+
+- Linux, Ubuntu 22.04 or newer, x86_64 or ARM64; or Windows 10/11 with WSL2
+- Chrome, Firefox or Edge
+- 1 GB of disk space
+
+### Windows: WSL2
+
+PowerShell as administrator, then restart:
 
 ```powershell
 wsl --install -d Ubuntu
 ```
 
-Restart the PC, open **Ubuntu** from the start menu, and choose a user name and password.
-Every following step runs in that Ubuntu window. The browser stays on Windows.
+All further commands run in the Ubuntu shell. The browser runs on Windows; WSL2 forwards
+`localhost`.
 
-### Install git, curl and uv
+### Tools
 
 ```bash
 sudo apt update
@@ -35,21 +62,16 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 ```
 
-uv installs Python and every package for you. Nothing else to install on x86_64.
+[uv](https://docs.astral.sh/uv/) installs Python 3.12, the Python packages and the dora CLI.
 
-### ARM64 only: install a compiler
-
-ruckig has no prebuilt wheel for Linux on ARM64, so `uv sync` compiles it from source. That
-needs a C++ compiler and the Python 3.12 headers:
+Linux ARM64 additionally needs a C++ compiler and the Python headers, because ruckig builds
+from source there:
 
 ```bash
 sudo apt install -y build-essential python3.12-dev
 ```
 
-`python3.12-dev` is for Ubuntu 24.04, where uv uses the system Python 3.12. `uname -m` prints
-`aarch64` on ARM64.
-
-## Setup, once
+## Setup
 
 ```bash
 git clone https://github.com/SailnMobula/dora-motion-exercise.git
@@ -57,97 +79,80 @@ cd dora-motion-exercise
 uv sync
 ```
 
-`uv sync` downloads Python 3.12 and about 900 MB of packages, a few minutes.
+`uv sync` installs about 900 MB into `.venv/`.
 
-## Run an exercise
+## Running an exercise
 
 ```bash
 cd exercises/01_joint_space
 uv run dora run dataflow.yml
 ```
 
-Open **http://localhost:8080** in the browser. Stop with `Ctrl+C`.
+UI on http://localhost:8080, stop with `Ctrl+C`. The UI port moves to 8081 when 8080 is taken;
+the terminal prints the address.
 
-## The task
-
-Open `dataflow.yml` in the exercise folder. Every input is commented out:
-
-```yaml
-    inputs:
-      # state:
-```
-
-Uncomment it and name where the data comes from, `<node>/<output>`:
+Every input in an exercise's `dataflow.yml` is commented out. Wiring an input means
+uncommenting it and naming the producing output as `<node>/<output>`:
 
 ```yaml
     inputs:
       state: driver/state
 ```
 
-Restart the dataflow after every change. The browser shows a control once its output is
-wired, so a half-wired dataflow still runs. Each exercise folder has a `README.md` with the
-task. The solutions are in `solutions/`.
+dora reads the dataflow at start, so every change needs a restart. The UI builds a control
+only for outputs that another node consumes. Reference wiring: `solutions/`. All nodes wired
+at once: `solutions/full/`.
 
-| # | Exercise | You see |
-| --- | --- | --- |
-| 1 | Joint space | joints arrive one after another |
-| 2 | Time | all joints stop together |
-| 3 | Task space | the gizmo drives the arm |
-| 4 | Straight lines | a curve against a line to the same target |
-| 5 | Collision | the block turns red, the plan is refused |
-| 6 | Planner | several arm postures tried, the first free one wins |
-
-Everything at once: `cd solutions/full && uv run dora run dataflow.yml`.
-
-## Problems
+## Troubleshooting
 
 | Symptom | Fix |
 | --- | --- |
-| `uv: command not found` | open a new terminal, or `source $HOME/.local/bin/env` |
-| `Failed to build ruckig`, `Could not find the compiler` | ARM64: `sudo apt install -y build-essential python3.12-dev`, then `uv sync` |
+| `uv: command not found` | new terminal, or `source $HOME/.local/bin/env` |
+| `Failed to build ruckig` | `sudo apt install -y build-essential python3.12-dev`, then `uv sync` |
 | `fatal error: Python.h: No such file or directory` | `sudo apt install -y python3.12-dev`, then `uv sync` |
-| Browser shows nothing | the terminal prints the address, e.g. `http://localhost:8081` if 8080 was taken |
-| An old dataflow still runs | `Ctrl+C` in its terminal; only one dataflow at a time |
+| Messages stall between nodes | one dataflow per machine; stop other `dora run` processes |
 
-## The real arm (optional)
+## Real arm
 
-The arm needs a [LeRobot](https://github.com/huggingface/lerobot) calibration file first.
+Requirements: a [LeRobot](https://github.com/huggingface/lerobot) calibration, which places
+each joint's zero at the middle of its range, and access to the serial port.
 
 ```bash
 uv sync --extra real
-sudo usermod -aG dialout $USER     # serial port access, then log out and in again
+sudo usermod -aG dialout $USER
 ```
 
-Set the port in `config/robot.yaml` under `real: port:`, usually `/dev/ttyACM0`. In the
-browser, switch **Robot** to `real`.
+Log out and in once for the group change. The port is set in `config/robot.yaml` under
+`real: port:`, default `/dev/ttyACM0`. The **Robot** dropdown in the UI switches between `sim`
+and `real`. Exercise 1 has no dropdown: raw joint goals drive the servos at full speed.
 
-On WSL2, the USB port has to be passed through from Windows first, in PowerShell as
-administrator: `winget install usbipd`, then `usbipd list`, `usbipd bind --busid <id>` and
-`usbipd attach --wsl --busid <id>`.
+WSL2 has no direct USB access. [usbipd-win](https://github.com/dorssel/usbipd-win) attaches
+the device, from PowerShell as administrator:
+
+```powershell
+winget install usbipd
+usbipd list
+usbipd bind --busid <id>
+usbipd attach --wsl --busid <id>
+```
+
+`uv run python tools/check_real.py` reads the servo positions without writing to the bus and
+shows them against the URDF.
 
 ## Repository layout
 
 | Path | Content |
 | --- | --- |
-| `so101/` | library: kinematics, IK, ruckig, coal collision, drivers |
-| `nodes/` | one dora node per file |
-| `config/` | robot, motion limits, table, scenes |
-| `exercises/` | written by `uv run python tools/make_exercises.py` from `solutions/` |
-| `tools/check_real.py` | read-only check of the real arm against the URDF |
-| `tests/` | `uv run pytest`, about 30 s |
+| `so101/` | library without dora dependency: kinematics, IK, profiles, collision, drivers |
+| `nodes/` | one dora node per file, thin wrappers around `so101/` |
+| `config/robot.yaml` | joints, tool frame, home pose, table, real arm port |
+| `config/motion.yaml` | PTP velocity, acceleration and jerk, LIN tool limits, sim servo |
+| `config/scenes/` | obstacle boxes |
+| `robot/` | SO-101 URDF, STL meshes, SRDF |
+| `exercises/` | generated from `solutions/` by `uv run python tools/make_exercises.py` |
+| `tests/` | `uv run pytest`: library tests and every solution in sim, about 30 s |
 
-`ROBOT_CONFIG` points at another robot's YAML, `config/robot.yaml` is the default.
-
-## Built with
-
-| Part | Library |
-| --- | --- |
-| Dataflow | [dora-rs](https://github.com/dora-rs/dora) |
-| Kinematics, IK | [pinocchio](https://github.com/stack-of-tasks/pinocchio) |
-| Trajectories | [ruckig](https://github.com/pantor/ruckig) |
-| Collision | [coal](https://github.com/coal-library/coal) |
-| UI | [viser](https://github.com/nerfstudio-project/viser) |
-| Robot model | [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100), see `robot/README.md` |
+`ROBOT_CONFIG` selects a different robot YAML; `config/robot.yaml` is the default.
 
 ## License
 
